@@ -18,6 +18,10 @@
   </style>
 
   <script type="text/javascript" charset="utf-8">
+    //=========================================================================
+    // Database
+    //=========================================================================
+    var mlab_api_key = "Do4rql-3HdmtYmJE5oz9rHVILV5Mos9d"
 
     //named css
     function mark_old(value) {
@@ -40,21 +44,26 @@
     }
 
     function linkClick() {
-      var id = $$("links").getSelectedId()
-      $$("links").getItem(id)["lastvisit"] = date_string()
-      $$("links").updateItem(id, $$("links").getItem(id))
-      $$("links").getItem(id)["pastvis"] = $$("links").getItem(id).period
-      $$("links").updateItem(id, $$("links").getItem(id))
-      open($$("links").getItem(id)["url"])
+      var item = $$("links").getSelectedItem()
+      console.log(item)
+      item["lastvisit"] = date_string()
+      item["pastvis"] = item.period
+      webix.ajax().
+        headers({ "Content-type": "application/json" }).
+        put("https://api.mlab.com/api/1/databases/hsyn/collections/favorites/" + item._id.$oid + "?apiKey=" + mlab_api_key, JSON.stringify(item),
+          function (t, d, x) {
+            console.log(d.json())
+          })
+      open(item["url"])
       return true
     }
 
     function add_row() {
       $$("links").add({
-        "class": $$("links").getHeaderContent("classHead").getValue(),
+        // "class": $$("links").getHeaderContent("classHead").getValue(),
         "category": $$("links").getHeaderContent("categoryHead").getValue(),
-        "tags": $$("links").getHeaderContent("tagsHead").getValue(),
-        "head": $$("links").getHeaderContent("headHead").getValue(),
+        // "tags": $$("links").getHeaderContent("tagsHead").getValue(),
+        "title": $$("links").getHeaderContent("titleHead").getValue(),
         "url": $$("links").getHeaderContent("urlHead").getValue(),
         "period": $$("links").getHeaderContent("periodHead").getValue(),
         "lastvisit": date_string(),
@@ -65,19 +74,32 @@
       $$("links").remove($$("links").getSelectedId(true));
     }
 
+    iconTemplate = function (obj) {
+      if (obj.favicon) {
+        if (obj.favicon.indexOf(".ico") > -1) {
+          return "<img height=20 src='" + obj.url + obj.favicon + "'>"
+        }
+        else {
+          return "<img height=20 src='" + obj.favicon + "'>"
+        }
+      }
+      return ""
+    }
+
     webix.ready(function () {
 
       var grid = {
         id: "links",
-        url: "/data",
-        save: "rest->/data",
+        url: "https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key,
+        // save: "rest->/data",
         view: "datatable", select: "row",
         columns: [
-          { id: "no", header: "No", width: 50, sort: "int", fillspace: 2 },
-          { id: "class", header: ["Sınıf", { content: "selectFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
+          // { id: "no", header: "No", width: 50, sort: "int", fillspace: 2 },
+          { id: "favicon", header:"", width: 50, template: iconTemplate },
+          // { id: "class", header: ["Sınıf", { content: "selectFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
           { id: "category", header: ["Kategori", { content: "textFilter", contentId: "categoryHead" }], editor: "text", fillspace: 4 },
-          { id: "tags", header: ["Etiketler", { content: "textFilter", contentId: "tagsHead" }], editor: "text", fillspace: 6 },
-          { id: "head", header: ["Başlık", { content: "textFilter", contentId: "headHead" }], editor: "text", fillspace: 11 },
+          // { id: "tags", header: ["Etiketler", { content: "textFilter", contentId: "tagsHead" }], editor: "text", fillspace: 6 },
+          { id: "title", header: ["Başlık", { content: "textFilter", contentId: "titleHead" }], editor: "text", fillspace: 11 },
           { id: "url", header: ["Adres", { content: "textFilter", contentId: "urlHead" }], template: "<a href='javascript:linkClick()'>#url#</a>", editor: "text", fillspace: 11 },
           { id: "period", header: ["Sıklık", { content: "selectFilter", contentId: "periodHead" }], width: 75, editor: "select", options: ["180", "90", "60", "30", "15", "7", "3"], fillspace: 2 },
           { id: "lastvisit", header: "Son Ziyaret", editor: "text", fillspace: 4 },
@@ -90,23 +112,30 @@
         }
       }
 
-      //			grid.filterByAll=function(){
-      //get fitler values
-      //			var text = this.getFilter("rank").value.toString().toLowerCase();
-      //unfilter for empty search text
-      //		if (!text) return this.filter();
-
-      //filter using or logic
-      //	this.filter(function(obj){
-      //	if (equals(obj.year, text)) return true;
-      //if (equals(obj.title, text)) return true;
-      //return false;
-      //});
-      //}
-
       app = webix.ui({
         rows: [grid]
       });
+
+      webix.ajax().get("http://localhost:3003/extract?url=http://www.google.com", function (t, d, x) {
+        var data = d.json()
+        webix.ajax().
+          headers({ "Content-type": "application/json" }).
+          post("https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key, JSON.stringify(
+            { no: 1, url: data.url, favicon: data.favicon, title: data.title }),
+            function (t, d, x) {
+              console.log(d.json())
+              webix.message("New building added")
+            })
+      })
+
+      // webix.ajax().
+      //   headers({ "Content-type": "application/json" }).
+      //   post("https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key, JSON.stringify(
+      //     { no: 1, url: "http://www.haberturk.com", favicon: }),
+      //     function (t, d, x) {
+      //       console.log(d.json())
+      //       webix.message("New building added")
+      //     })
 
     });
 
