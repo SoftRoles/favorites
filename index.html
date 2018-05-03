@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Bağlantılar</title>
+  <link rel="stylesheet" href="bower_components/webix/codebase/skins/compact.css" type="text/css" charset="utf-8">
+  <script src="bower_components/webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
+
+
+</head>
+
+<body>
+
+  <style>
+    .highlight {
+      background-color: #FFAAAA;
+    }
+  </style>
+
+  <script type="text/javascript" charset="utf-8">
+
+    //named css
+    function mark_old(value) {
+      if (value < 1)
+        return "highlight";
+    }
+
+    function date_string() {
+      var today = new Date()
+      var year = today.getFullYear()
+      var monthNumber = Number(today.getMonth()) + 1
+      var month = ""
+      if (monthNumber < 10) { month = "0" + String(monthNumber) }
+      else { month = String(monthNumber) }
+      var dayNumber = today.getDate()
+      var day = ""
+      if (dayNumber < 10) { day = "0" + String(dayNumber) }
+      else { day = String(dayNumber) }
+      return year + "-" + month + "-" + day
+    }
+
+    function linkClick() {
+      var id = $$("links").getSelectedId()
+      $$("links").getItem(id)["lastvisit"] = date_string()
+      $$("links").updateItem(id, $$("links").getItem(id))
+      $$("links").getItem(id)["pastvis"] = $$("links").getItem(id).period
+      $$("links").updateItem(id, $$("links").getItem(id))
+      open($$("links").getItem(id)["url"])
+      return true
+    }
+
+    function add_row() {
+      $$("links").add({
+        "class": $$("links").getHeaderContent("classHead").getValue(),
+        "category": $$("links").getHeaderContent("categoryHead").getValue(),
+        "tags": $$("links").getHeaderContent("tagsHead").getValue(),
+        "head": $$("links").getHeaderContent("headHead").getValue(),
+        "url": $$("links").getHeaderContent("urlHead").getValue(),
+        "period": $$("links").getHeaderContent("periodHead").getValue(),
+        "lastvisit": date_string(),
+        "pastvis": $$("links").getHeaderContent("periodHead").getValue()
+      });
+    }
+    function delete_row() {
+      $$("links").remove($$("links").getSelectedId(true));
+    }
+
+    webix.ready(function () {
+
+      var grid = {
+        id: "links",
+        url: "/data",
+        save: "rest->/data",
+        view: "datatable", select: "row",
+        columns: [
+          { id: "no", header: "No", width: 50, sort: "int", fillspace: 2 },
+          { id: "class", header: ["Sınıf", { content: "selectFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
+          { id: "category", header: ["Kategori", { content: "textFilter", contentId: "categoryHead" }], editor: "text", fillspace: 4 },
+          { id: "tags", header: ["Etiketler", { content: "textFilter", contentId: "tagsHead" }], editor: "text", fillspace: 6 },
+          { id: "head", header: ["Başlık", { content: "textFilter", contentId: "headHead" }], editor: "text", fillspace: 11 },
+          { id: "url", header: ["Adres", { content: "textFilter", contentId: "urlHead" }], template: "<a href='javascript:linkClick()'>#url#</a>", editor: "text", fillspace: 11 },
+          { id: "period", header: ["Sıklık", { content: "selectFilter", contentId: "periodHead" }], width: 75, editor: "select", options: ["180", "90", "60", "30", "15", "7", "3"], fillspace: 2 },
+          { id: "lastvisit", header: "Son Ziyaret", editor: "text", fillspace: 4 },
+          { id: "pastvis", header: "Geri Sayım", sort: "int", cssFormat: mark_old, fillspace: 2 },
+          { id: "delete_row", header: "<input type='button' value='Ekle' onclick='add_row()'/>", template: "<input type='button' value='Sil' onclick='delete_row()'/>", fillspace: 2 }
+        ],
+        editable: true, editaction: "dblclick",
+        on: {
+          "onAfterLoad": function () { this.sort("pastvis", "asc", "int") }
+        }
+      }
+
+      //			grid.filterByAll=function(){
+      //get fitler values
+      //			var text = this.getFilter("rank").value.toString().toLowerCase();
+      //unfilter for empty search text
+      //		if (!text) return this.filter();
+
+      //filter using or logic
+      //	this.filter(function(obj){
+      //	if (equals(obj.year, text)) return true;
+      //if (equals(obj.title, text)) return true;
+      //return false;
+      //});
+      //}
+
+      app = webix.ui({
+        rows: [grid]
+      });
+
+    });
+
+
+
+  </script>
+</body>
+
+</html>
