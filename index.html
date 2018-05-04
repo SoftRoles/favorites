@@ -29,6 +29,15 @@
         return "highlight";
     }
 
+    var urlHost = function (url) {
+      var urlParts = url.split(/[/?#]/);
+      // var l = document.createElement("a");
+      // l.href = href;
+      // return l.hostname;
+      // console.log(urlParts)
+      return urlParts[0] + urlParts[1] + urlParts[2];
+    };
+
     function date_string() {
       var today = new Date()
       var year = today.getFullYear()
@@ -45,12 +54,10 @@
 
     function linkClick() {
       var item = $$("links").getSelectedItem()
-      console.log(item)
-      item["lastvisit"] = date_string()
-      item["pastvis"] = item.period
       webix.ajax().
         headers({ "Content-type": "application/json" }).
-        put("https://api.mlab.com/api/1/databases/hsyn/collections/favorites/" + item._id.$oid + "?apiKey=" + mlab_api_key, JSON.stringify(item),
+        put("https://api.mlab.com/api/1/databases/hsyn/collections/favorites/" + item._id.$oid + "?apiKey=" + mlab_api_key,
+          JSON.stringify({ "$set": { lastvisit: date_string(), pastvis: item.period } }),
           function (t, d, x) {
             console.log(d.json())
           })
@@ -58,32 +65,71 @@
       return true
     }
 
-    function add_row() {
-      $$("links").add({
-        // "class": $$("links").getHeaderContent("classHead").getValue(),
+    function addItem() {
+      var item = {
         "category": $$("links").getHeaderContent("categoryHead").getValue(),
-        // "tags": $$("links").getHeaderContent("tagsHead").getValue(),
-        "title": $$("links").getHeaderContent("titleHead").getValue(),
         "url": $$("links").getHeaderContent("urlHead").getValue(),
         "period": $$("links").getHeaderContent("periodHead").getValue(),
-        "lastvisit": date_string(),
-        "pastvis": $$("links").getHeaderContent("periodHead").getValue()
-      });
+        "lastvisit": date_string()
+      }
+      webix.ajax().
+        headers({ "Content-type": "application/json" }).
+        post("https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key, JSON.stringify(item),
+          function (t, d, x) {
+            console.log(d.json())
+            webix.message("New item added")
+          })
+      // webix.ajax().get("http://localhost:3003/extract?url=" + item.url, function (t, d, x) {
+      //   var data = d.json()
+      //   item.title = data.title
+      //   // item.favicon = data.favicon
+      // })
+
+      $$("links").add(item);
     }
-    function delete_row() {
-      $$("links").remove($$("links").getSelectedId(true));
+    function delItem() {
+      var item = $$("links").getSelectedItem()
+      webix.ajax().del("https://api.mlab.com/api/1/databases/hsyn/collections/favorites/" + item._id.$oid + "?apiKey=" + mlab_api_key,
+        function (t, d, x) {
+          console.log(d.json())
+          webix.message("Item deleted.")
+          $$("links").remove($$("links").getSelectedId(true));
+        })
     }
 
     iconTemplate = function (obj) {
-      if (obj.favicon) {
-        if (obj.favicon.indexOf(".ico") > -1) {
-          return "<img height=20 src='" + obj.url + obj.favicon + "'>"
-        }
-        else {
-          return "<img height=20 src='" + obj.favicon + "'>"
-        }
-      }
-      return ""
+      // if (obj.favicon) {
+      //   console.log(obj.favicon)
+      //   if (obj.favicon.indexOf("http") == -1 && obj.favicon.indexOf(".ico") > -1) {
+      //     // console.log(urlHost(obj.url) + "/" + obj.favicon)
+      //     if (obj.favicon.startsWith("/")) {
+      //       return "<img height=20 src='" + urlHost(obj.url) + obj.favicon + "'>"
+      //     }
+      //     else {
+      //       return "<img height=20 src='" + urlHost(obj.url) + "/" + obj.favicon + "'>"
+      //     }
+      //   }
+      //   else {
+      //     return "<img height=20 src='" + obj.favicon + "'>"
+      //   }
+      // }
+      return "<img height=20 src='https://www.google.com/s2/favicons?domain=" + obj.url + "'>"
+      // return ""
+    }
+
+    // pastvisTemplate = function (obj) {
+    //   if (obj.lastvisit && obj.period) {
+    //     // console.log(obj.lastvisit)
+    //     var lastvisit = new Date(obj.lastvisit)
+    //     // console.log(lastvisit)
+    //     var today = new Date()
+    //     return obj.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
+    //   }
+    //   else return ""
+    // }
+
+    pastvisSort = function (a, b) {
+      return (pastvisTemplate(a) < pastvisTemplate(b)) ? -1 : 1
     }
 
     webix.ready(function () {
@@ -94,21 +140,45 @@
         // save: "rest->/data",
         view: "datatable", select: "row",
         columns: [
-          // { id: "no", header: "No", width: 50, sort: "int", fillspace: 2 },
-          { id: "favicon", header:"", width: 50, template: iconTemplate },
-          // { id: "class", header: ["Sınıf", { content: "selectFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
+          { id: "favicon", header: "", width: 50, template: iconTemplate },
           { id: "category", header: ["Kategori", { content: "textFilter", contentId: "categoryHead" }], editor: "text", fillspace: 4 },
-          // { id: "tags", header: ["Etiketler", { content: "textFilter", contentId: "tagsHead" }], editor: "text", fillspace: 6 },
           { id: "title", header: ["Başlık", { content: "textFilter", contentId: "titleHead" }], editor: "text", fillspace: 11 },
           { id: "url", header: ["Adres", { content: "textFilter", contentId: "urlHead" }], template: "<a href='javascript:linkClick()'>#url#</a>", editor: "text", fillspace: 11 },
           { id: "period", header: ["Sıklık", { content: "selectFilter", contentId: "periodHead" }], width: 75, editor: "select", options: ["180", "90", "60", "30", "15", "7", "3"], fillspace: 2 },
           { id: "lastvisit", header: "Son Ziyaret", editor: "text", fillspace: 4 },
-          { id: "pastvis", header: "Geri Sayım", sort: "int", cssFormat: mark_old, fillspace: 2 },
-          { id: "delete_row", header: "<input type='button' value='Ekle' onclick='add_row()'/>", template: "<input type='button' value='Sil' onclick='delete_row()'/>", fillspace: 2 }
+          { id: "pastvis", header: "Geri Sayım", sort: "int", cssFormat: mark_old, fillspace: 2/*, template: pastvisTemplate, sort: pastvisSort*/ },
+          { id: "delete_row", header: "<input type='button' value='Ekle' onclick='addItem()'/>", template: "<input type='button' value='Sil' onclick='delItem()'/>", fillspace: 2 }
         ],
         editable: true, editaction: "dblclick",
         on: {
-          "onAfterLoad": function () { this.sort("pastvis", "asc", "int") }
+          "onAfterLoad": function () {
+            this.sort("pastvis", "asc", "int")
+            this.serialize().forEach(function (item) {
+              webix.ajax().get("http://localhost:3003/extract?url=" + item.url, function (t, d, x) {
+                var data = d.json()
+                // console.log(data)
+                item.title = data.title
+
+                var lastvisit = new Date(item.lastvisit)
+                var today = new Date()
+                item.pastvis = item.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
+
+                $$("links").updateItem(item.id, item)
+                $$("links").sort("pastvis", "asc", "int")
+              })
+
+            })
+          },
+          "onAfterEditStop": function (state, editor) {
+            var item = this.getSelectedItem()
+            webix.ajax().
+              headers({ "Content-type": "application/json" }).
+              put("https://api.mlab.com/api/1/databases/hsyn/collections/favorites/" + item._id.$oid + "?apiKey=" + mlab_api_key,
+                JSON.stringify({ "$set": { [editor.column]: state.value } }),
+                function (t, d, x) {
+                  console.log(d.json())
+                })
+          },
         }
       }
 
@@ -116,31 +186,7 @@
         rows: [grid]
       });
 
-      webix.ajax().get("http://localhost:3003/extract?url=http://www.google.com", function (t, d, x) {
-        var data = d.json()
-        webix.ajax().
-          headers({ "Content-type": "application/json" }).
-          post("https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key, JSON.stringify(
-            { no: 1, url: data.url, favicon: data.favicon, title: data.title }),
-            function (t, d, x) {
-              console.log(d.json())
-              webix.message("New building added")
-            })
-      })
-
-      // webix.ajax().
-      //   headers({ "Content-type": "application/json" }).
-      //   post("https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key, JSON.stringify(
-      //     { no: 1, url: "http://www.haberturk.com", favicon: }),
-      //     function (t, d, x) {
-      //       console.log(d.json())
-      //       webix.message("New building added")
-      //     })
-
     });
-
-
-
   </script>
 </body>
 
