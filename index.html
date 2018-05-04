@@ -86,10 +86,6 @@
       return "<img height=20 src='https://www.google.com/s2/favicons?domain=" + obj.url + "'>"
     }
 
-    pastvisSort = function (a, b) {
-      return (pastvisTemplate(a) < pastvisTemplate(b)) ? -1 : 1
-    }
-
     webix.ready(function () {
       var grid = {
         id: "links",
