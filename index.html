@@ -29,15 +29,6 @@
         return "highlight";
     }
 
-    var urlHost = function (url) {
-      var urlParts = url.split(/[/?#]/);
-      // var l = document.createElement("a");
-      // l.href = href;
-      // return l.hostname;
-      // console.log(urlParts)
-      return urlParts[0] + urlParts[1] + urlParts[2];
-    };
-
     function date_string() {
       var today = new Date()
       var year = today.getFullYear()
@@ -79,12 +70,6 @@
             console.log(d.json())
             webix.message("New item added")
           })
-      // webix.ajax().get("http://localhost:3003/extract?url=" + item.url, function (t, d, x) {
-      //   var data = d.json()
-      //   item.title = data.title
-      //   // item.favicon = data.favicon
-      // })
-
       $$("links").add(item);
     }
     function delItem() {
@@ -98,46 +83,17 @@
     }
 
     iconTemplate = function (obj) {
-      // if (obj.favicon) {
-      //   console.log(obj.favicon)
-      //   if (obj.favicon.indexOf("http") == -1 && obj.favicon.indexOf(".ico") > -1) {
-      //     // console.log(urlHost(obj.url) + "/" + obj.favicon)
-      //     if (obj.favicon.startsWith("/")) {
-      //       return "<img height=20 src='" + urlHost(obj.url) + obj.favicon + "'>"
-      //     }
-      //     else {
-      //       return "<img height=20 src='" + urlHost(obj.url) + "/" + obj.favicon + "'>"
-      //     }
-      //   }
-      //   else {
-      //     return "<img height=20 src='" + obj.favicon + "'>"
-      //   }
-      // }
       return "<img height=20 src='https://www.google.com/s2/favicons?domain=" + obj.url + "'>"
-      // return ""
     }
-
-    // pastvisTemplate = function (obj) {
-    //   if (obj.lastvisit && obj.period) {
-    //     // console.log(obj.lastvisit)
-    //     var lastvisit = new Date(obj.lastvisit)
-    //     // console.log(lastvisit)
-    //     var today = new Date()
-    //     return obj.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
-    //   }
-    //   else return ""
-    // }
 
     pastvisSort = function (a, b) {
       return (pastvisTemplate(a) < pastvisTemplate(b)) ? -1 : 1
     }
 
     webix.ready(function () {
-
       var grid = {
         id: "links",
         url: "https://api.mlab.com/api/1/databases/hsyn/collections/favorites?apiKey=" + mlab_api_key,
-        // save: "rest->/data",
         view: "datatable", select: "row",
         columns: [
           { id: "favicon", header: "", width: 50, template: iconTemplate },
