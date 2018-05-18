@@ -79,8 +79,8 @@
         view: "datatable", select: "row",
         columns: [
           { id: "favicon", header: "", width: 50, template: iconTemplate },
-          { id: "class", header: ["Class", { content: "textFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
-          { id: "category", header: ["Category", { content: "textFilter", contentId: "categoryHead" }], editor: "text", fillspace: 4 },
+          { id: "class", header: ["Class", { content: "selectFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
+          { id: "category", header: ["Category", { content: "selectFilter", contentId: "categoryHead" }], editor: "text", fillspace: 4 },
           // { id: "tags", header: ["Etiketler", { content: "textFilter", contentId: "tagsHead" }], editor: "text", fillspace: 6 },
           { id: "head", header: ["Title", { content: "textFilter", contentId: "titleHead" }], editor: "text", fillspace: 11 },
           { id: "url", header: ["URL", { content: "textFilter", contentId: "urlHead" }], template: "<a href='javascript:linkClick()'>#url#</a>", editor: "text", fillspace: 11 },
