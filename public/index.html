@@ -105,6 +105,12 @@
             // this.refreshColumns()
           },
           "onAfterFilter": function () {
+            var items = []
+            var id = $$("links").getFirstId()
+            while (id) {
+              items.push($$("links").getItem(id))
+              id = $$("links").getNextId(id)
+            }
             // var items = this.find({
             //   "class": $$("links").getHeaderContent("classHead").getValue(),
             //   "category": $$("links").getHeaderContent("categoryHead").getValue(),
@@ -112,12 +118,15 @@
             //   "url": $$("links").getHeaderContent("urlHead").getValue(),
             //   "period": $$("links").getHeaderContent("periodHead").getValue()
             // })
+            // console.log(items)
             // categoryOptions.push({ id: 1, value: "" })
             // categoryOptionsList = items.map(item => item.category).filter((value, index, self) => self.indexOf(value) === index)
             // categoryOptionsList.forEach(function (item) { categoryOptions.push({ id: item, value: item }) })
-            // classOptions.push({ id: 1, value: "" })
+            // classOptionsList = []
             // classOptionsList = items.map(item => item.class).filter((value, index, self) => self.indexOf(value) === index)
-            // classOptionsList.forEach(function (item) { classOptions.push({ id: item, value: item }) })
+            // classOptionsList.unshift("")
+            // for (var i = 0; i < 99999; i++) { $$("links").getFilter("class").remove(0) }
+            // classOptionsList.forEach(function (item) { $$("links").getFilter("class").options.add(new Option(item,item,false,false)) })
             // this.refreshColumns()
           }
         }
