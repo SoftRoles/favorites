@@ -3,8 +3,8 @@
 
 <head>
   <title>Bağlantılar</title>
-  <link rel="stylesheet" href="bower_components/webix/codebase/skins/compact.css" type="text/css" charset="utf-8">
-  <script src="bower_components/webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
+  <link rel="stylesheet" href="favorites/bower_components/webix/codebase/skins/compact.css" type="text/css" charset="utf-8">
+  <script src="favorites/bower_components/webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
 
 
 </head>
@@ -18,6 +18,108 @@
   </style>
 
   <script type="text/javascript" charset="utf-8">
+
+    //named css
+    function mark_old(value) {
+      if (value < 1)
+        return "highlight";
+    }
+
+    function date_string() {
+      var today = new Date()
+      var year = today.getFullYear()
+      var monthNumber = Number(today.getMonth()) + 1
+      var month = ""
+      if (monthNumber < 10) { month = "0" + String(monthNumber) }
+      else { month = String(monthNumber) }
+      var dayNumber = today.getDate()
+      var day = ""
+      if (dayNumber < 10) { day = "0" + String(dayNumber) }
+      else { day = String(dayNumber) }
+      return year + "-" + month + "-" + day
+    }
+
+    function linkClick() {
+      var id = $$("links").getSelectedId()
+      $$("links").getItem(id)["lastvisit"] = date_string()
+      $$("links").updateItem(id, $$("links").getItem(id))
+      $$("links").getItem(id)["pastvis"] = $$("links").getItem(id).period
+      $$("links").updateItem(id, $$("links").getItem(id))
+      open($$("links").getItem(id)["url"])
+      return true
+    }
+
+    function add_row() {
+      $$("links").add({
+        "class": $$("links").getHeaderContent("classHead").getValue(),
+        "category": $$("links").getHeaderContent("categoryHead").getValue(),
+        // "tags": $$("links").getHeaderContent("tagsHead").getValue(),
+        "head": $$("links").getHeaderContent("titleHead").getValue(),
+        "url": $$("links").getHeaderContent("urlHead").getValue(),
+        "period": $$("links").getHeaderContent("periodHead").getValue(),
+        "lastvisit": date_string(),
+        "pastvis": $$("links").getHeaderContent("periodHead").getValue()
+      });
+    }
+    function delete_row() {
+      $$("links").remove($$("links").getSelectedId(true));
+    }
+
+    iconTemplate = function (obj) {
+      return "<img height=20 src='https://www.google.com/s2/favicons?domain=" + obj.url + "'>"
+    }
+
+
+    webix.ready(function () {
+
+      var grid = {
+        id: "links",
+        url: "/favorites/api",
+        save: "rest->/favorites/api",
+        view: "datatable", select: "row",
+        columns: [
+          { id: "favicon", header: "", width: 50, template: iconTemplate },
+          { id: "class", header: ["Class", { content: "textFilter", contentId: "classHead" }], editor: "text", sort: "text", fillspace: 3 },
+          { id: "category", header: ["Category", { content: "textFilter", contentId: "categoryHead" }], editor: "text", fillspace: 4 },
+          // { id: "tags", header: ["Etiketler", { content: "textFilter", contentId: "tagsHead" }], editor: "text", fillspace: 6 },
+          { id: "head", header: ["Title", { content: "textFilter", contentId: "titleHead" }], editor: "text", fillspace: 11 },
+          { id: "url", header: ["URL", { content: "textFilter", contentId: "urlHead" }], template: "<a href='javascript:linkClick()'>#url#</a>", editor: "text", fillspace: 11 },
+          { id: "period", header: ["Period", { content: "selectFilter", contentId: "periodHead" }], width: 75, editor: "select", options: ["360", "180", "90", "60", "30", "15", "7", "3"], fillspace: 2 },
+          { id: "lastvisit", header: "Last Vis", editor: "text", fillspace: 4 },
+          { id: "pastvis", header: "Countdown", sort: "int", cssFormat: mark_old, fillspace: 2 },
+          { id: "delete_row", header: "<input type='button' value='Ekle' onclick='add_row()'/>", template: "<input type='button' value='Sil' onclick='delete_row()'/>", fillspace: 2 }
+        ],
+        editable: true, editaction: "dblclick",
+        on: {
+          "onAfterLoad": function () { this.sort("pastvis", "asc", "int") }
+        }
+      }
+
+      //			grid.filterByAll=function(){
+      //get fitler values
+      //			var text = this.getFilter("rank").value.toString().toLowerCase();
+      //unfilter for empty search text
+      //		if (!text) return this.filter();
+
+      //filter using or logic
+      //	this.filter(function(obj){
+      //	if (equals(obj.year, text)) return true;
+      //if (equals(obj.title, text)) return true;
+      //return false;
+      //});
+      //}
+
+      app = webix.ui({
+        rows: [grid]
+      });
+
+    });
+
+
+
+  </script>
+
+  <!-- <script type="text/javascript" charset="utf-8">
     //=========================================================================
     // Database
     //=========================================================================
@@ -139,7 +241,7 @@
       });
 
     });
-  </script>
+  </script> -->
 </body>
 
 </html>
