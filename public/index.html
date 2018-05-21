@@ -96,6 +96,13 @@
         on: {
           "onAfterLoad": function () {
             this.sort("pastvis", "asc", "int")
+            this.serialize().forEach(function (item) {
+              var lastvisit = new Date(item.lastvisit)
+              var today = new Date()
+              item.pastvis = item.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
+              $$("links").updateItem(item.id, item)
+              $$("links").sort("pastvis", "asc", "int")
+            })
             // categoryOptions.push({ id: 1, value: "" })
             // categoryOptionsList = this.find({}).map(item => item.category).filter((value, index, self) => self.indexOf(value) === index)
             // categoryOptionsList.forEach(function (item) { categoryOptions.push({ id: item, value: item }) })
