@@ -73,7 +73,7 @@
       return obj.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
     }
     
-    function pastvis(a,b){
+    function pastvisSort(a,b){
         var lastvisit_a = new Date(a.lastvisit)
         var lastvisit_b = new Date(b.lastvisit)
         var today = new Date()
@@ -103,7 +103,7 @@
         editable: true, editaction: "dblclick",
         on: {
           "onAfterLoad": function () {
-            setTimeout(function(){$$("links").sort(pastvis, "asc")},2000)
+            setTimeout(function(){$$("links").sort(pastvisSort, "asc")},2000)
           },
         }
       }
