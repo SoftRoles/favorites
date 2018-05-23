@@ -72,10 +72,15 @@
       var today = new Date()
       return obj.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
     }
-
-
-    var classOptions = []
-    var categoryOptions = []
+    
+    function pastvis(a,b){
+        var lastvisit_a = new Date(a.lastvisit)
+        var lastvisit_b = new Date(b.lastvisit)
+        var today = new Date()
+        var pastvis_a = a.period - ((today.getTime() - lastvisit_a.getTime()) / 86400000).toFixed(0)
+        var pastvis_b = b.period - ((today.getTime() - lastvisit_b.getTime()) / 86400000).toFixed(0)
+        return pastvis_a > pastvis_b ? 1 : -1 
+      }
 
     webix.ready(function () {
 
@@ -98,7 +103,7 @@
         editable: true, editaction: "dblclick",
         on: {
           "onAfterLoad": function () {
-            setTimeout(function(){$$("links").sort("pastvis", "asc", "int")},2000)
+            setTimeout(function(){$$("links").sort(pastvis, "asc")},2000)
           },
         }
       }
