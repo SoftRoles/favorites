@@ -48,16 +48,19 @@
     }
 
     function add_row() {
-      $$("links").add({
+      var id = $$("links").add({
         "class": $$("links").getHeaderContent("classHead").getValue(),
         "category": $$("links").getHeaderContent("categoryHead").getValue(),
-        // "tags": $$("links").getHeaderContent("tagsHead").getValue(),
-        //"head": $$("links").getHeaderContent("titleHead").getValue(),
         "url": $$("links").getHeaderContent("urlHead").getValue(),
         "period": $$("links").getHeaderContent("periodHead").getValue(),
         "lastvisit": date_string(),
-        //"pastvis": $$("links").getHeaderContent("periodHead").getValue()
       });
+      $$("links").filter()
+      setTimeout(function () {
+        $$("links").sort(pastvisSort, "asc")
+        $$("links").showItem(id); 
+        $$("links").select(id)
+      }, 1000)
     }
     function delete_row() {
       $$("links").remove($$("links").getSelectedId(true));
@@ -72,15 +75,15 @@
       var today = new Date()
       return obj.period - ((today.getTime() - lastvisit.getTime()) / 86400000).toFixed(0)
     }
-    
-    function pastvisSort(a,b){
-        var lastvisit_a = new Date(a.lastvisit)
-        var lastvisit_b = new Date(b.lastvisit)
-        var today = new Date()
-        var pastvis_a = a.period - ((today.getTime() - lastvisit_a.getTime()) / 86400000).toFixed(0)
-        var pastvis_b = b.period - ((today.getTime() - lastvisit_b.getTime()) / 86400000).toFixed(0)
-        return pastvis_a > pastvis_b ? 1 : -1 
-      }
+
+    function pastvisSort(a, b) {
+      var lastvisit_a = new Date(a.lastvisit)
+      var lastvisit_b = new Date(b.lastvisit)
+      var today = new Date()
+      var pastvis_a = a.period - ((today.getTime() - lastvisit_a.getTime()) / 86400000).toFixed(0)
+      var pastvis_b = b.period - ((today.getTime() - lastvisit_b.getTime()) / 86400000).toFixed(0)
+      return pastvis_a > pastvis_b ? 1 : -1
+    }
 
     webix.ready(function () {
 
@@ -103,7 +106,7 @@
         editable: true, editaction: "dblclick",
         on: {
           "onAfterLoad": function () {
-            setTimeout(function(){$$("links").sort(pastvisSort, "asc")},2000)
+            setTimeout(function () { $$("links").sort(pastvisSort, "asc") }, 2000)
           },
         }
       }
@@ -132,7 +135,7 @@
 
   </script>
 
- 
+
 </body>
 
 </html>
