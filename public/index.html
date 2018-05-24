@@ -57,6 +57,10 @@
       });
       $$("links").filter()
       setTimeout(function () {
+        $$("links").getHeaderContent("classHead").setValue(""),
+        $$("links").getHeaderContent("categoryHead").setValue(""),
+        $$("links").getHeaderContent("urlHead").setValue(""),
+        $$("links").getHeaderContent("periodHead").setValue(""),
         $$("links").sort(pastvisSort, "asc")
         $$("links").showItem(id); 
         $$("links").select(id)
