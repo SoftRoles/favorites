@@ -7,6 +7,11 @@ var request = require("request")
 var passport = require('passport');
 var passStrategyLocal = require('passport-local').Strategy;
 
+// Module related packages
+var MongoClient = require("mongodb").MongoClient
+var MongoObjectID = require('mongodb').ObjectID;
+
+var mongodb_url = "mongodb://localhost:27017"
 
 // Create a new Express application.
 var app = express();
@@ -28,7 +33,7 @@ app.use("/bower_components", express.static(__dirname + "/public/bower_component
 // will be set at `req.user` in route handlers after authentication.
 passport.use(new passStrategyLocal(function (username, password, cb) {
   request({
-    url: "http://localhost/mongodb/api/auth/users?username=" + username + "&password=" + password,
+    url: "http://localhost:3000/mongodb/api/auth/users?username=" + username + "&password=" + password,
     headers: { "Authorization": "Bearer %Sdf1234" }
   }, function (err, res, body) {
     var users = JSON.parse(body)
@@ -52,7 +57,7 @@ passport.serializeUser(function (user, cb) {
 
 passport.deserializeUser(function (username, cb) {
   request({
-    url: "http://localhost/mongodb/api/auth/users?username=" + username,
+    url: "http://localhost:3000/mongodb/api/auth/users?username=" + username,
     headers: { "Authorization": "Bearer %Sdf1234" }
   }, function (err, res, body) {
     var users = JSON.parse(body)
@@ -94,13 +99,13 @@ app.get('/favorites', require('connect-ensure-login').ensureLoggedIn({ redirectT
 });
 
 app.get('/favorites/user', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
-  MongoClient.connect(mongodb_url + "/auth", function (err, db) {
-    db.collection("users").findOne({ token: req.user.token }, function (err, user) {
-      if (err) res.send(err)
-      else res.send(user)
-      db.close();
-    });
-  });
+  request({
+    url: "http://localhost:3000/mongodb/api/auth/users?token=" + req.user.token,
+    headers: { "Authorization": "Bearer %Sdf1234" }
+  }, function (err, res, body) {
+    var users = JSON.parse(body)
+    return cb(null, users[0]);
+  })
 });
 
 
@@ -109,7 +114,7 @@ app.get('/favorites/user', require('connect-ensure-login').ensureLoggedIn(), fun
 //==================================================================================================
 app.get('/favorites/api', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
   request({
-    url: "http://localhost/mongodb/api/apps/favorites",
+    url: "http://localhost:3000/mongodb/api/favorites/links",
     headers: { "Authorization": "Bearer " + req.user.token }
   }, function (err, ress, body) {
     res.send(JSON.parse(body))
@@ -118,7 +123,7 @@ app.get('/favorites/api', require('connect-ensure-login').ensureLoggedIn(), func
 
 app.post('/favorites/api', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
   request({
-    url: "http://localhost/mongodb/api/apps/favorites",
+    url: "http://localhost:3000/mongodb/api/favorites/links",
     method: "POST",
     headers: { "Authorization": "Bearer " + req.user.token },
     body: req.body,
@@ -130,7 +135,7 @@ app.post('/favorites/api', require('connect-ensure-login').ensureLoggedIn(), fun
 
 app.put('/favorites/api/:id', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
   request({
-    url: "http://localhost/mongodb/api/apps/favorites/" + req.params.id,
+    url: "http://localhost:3000/mongodb/api/favorites/links/" + req.params.id,
     method: "PUT",
     headers: { "Authorization": "Bearer " + req.user.token },
     body: req.body,
@@ -142,7 +147,7 @@ app.put('/favorites/api/:id', require('connect-ensure-login').ensureLoggedIn(), 
 
 app.delete('/favorites/api/:id', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
   request({
-    url: "http://localhost/mongodb/api/apps/favorites/" + req.params.id,
+    url: "http://localhost:3000/mongodb/api/favorites/links/" + req.params.id,
     method: "DELETE",
     headers: { "Authorization": "Bearer " + req.user.token },
   }, function (err, ress, body) {
