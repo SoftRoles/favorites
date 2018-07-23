@@ -113,6 +113,8 @@ app.post('/favorites/api', require('connect-ensure-login').ensureLoggedIn(), fun
 });
 
 app.put('/favorites/api/:id', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+  req.body.owners = JSON.parse(String(req.body.owners))
+  req.body.users = JSON.parse(String(req.body.users))
   request({
     url: "http://127.0.0.1:3000/mongodb/api/favorites/links/" + req.params.id,
     method: "PUT",
@@ -125,6 +127,8 @@ app.put('/favorites/api/:id', require('connect-ensure-login').ensureLoggedIn(), 
 });
 
 app.delete('/favorites/api/:id', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+  req.body.owners = JSON.parse(String(req.body.owners))
+  req.body.users = JSON.parse(String(req.body.users))
   request({
     url: "http://127.0.0.1:3000/mongodb/api/favorites/links/" + req.params.id,
     method: "DELETE",
