@@ -18,7 +18,10 @@
   </style>
 
   <script type="text/javascript" charset="utf-8">
-
+    var user = {}
+    webix.ajax().get("/user", function (t, d, x) {
+      user = d.json()
+    })
     //named css
     function mark_old(value) {
       if (value < 1)
@@ -48,31 +51,27 @@
     }
 
     function add_row() {
-      webix.ajax().get("/user", function (t, d, x) {
-        user = d.json()
-        webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + $$("links").getHeaderContent("urlHead").getValue(), function (t, d, x) {
-          var id = $$("links").add({
-            "class": $$("links").getHeaderContent("classHead").getValue(),
-            "category": $$("links").getHeaderContent("categoryHead").getValue(),
-            title: d.json().title.trim(),
-            meta: d.json().meta,
-            "url": $$("links").getHeaderContent("urlHead").getValue(),
-            "period": $$("links").getHeaderContent("periodHead").getValue(),
-            "lastvisit": date_string(),
-          });
-          $$("links").filter()
-          setTimeout(function () {
-            $$("links").getHeaderContent("classHead").setValue("")
-            $$("links").getHeaderContent("categoryHead").setValue("")
-            $$("links").getHeaderContent("urlHead").setValue("")
-            $$("links").getHeaderContent("periodHead").setValue("")
-            $$("links").sort(pastvisSort, "asc")
-            $$("links").showItem(id);
-            $$("links").select(id)
-          }, 1000)
-        })
+      webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + $$("links").getHeaderContent("urlHead").getValue(), function (t, d, x) {
+        var id = $$("links").add({
+          "class": $$("links").getHeaderContent("classHead").getValue(),
+          "category": $$("links").getHeaderContent("categoryHead").getValue(),
+          title: d.json().title.trim(),
+          meta: d.json().meta,
+          "url": $$("links").getHeaderContent("urlHead").getValue(),
+          "period": $$("links").getHeaderContent("periodHead").getValue(),
+          "lastvisit": date_string(),
+        });
+        $$("links").filter()
+        setTimeout(function () {
+          $$("links").getHeaderContent("classHead").setValue("")
+          $$("links").getHeaderContent("categoryHead").setValue("")
+          $$("links").getHeaderContent("urlHead").setValue("")
+          $$("links").getHeaderContent("periodHead").setValue("")
+          $$("links").sort(pastvisSort, "asc")
+          $$("links").showItem(id);
+          $$("links").select(id)
+        }, 1000)
       })
-
     }
     function delete_row() {
       $$("links").remove($$("links").getSelectedId(true));
@@ -120,27 +119,20 @@
           "onAfterLoad": function () {
             setTimeout(function () { $$("links").sort(pastvisSort, "asc") }, 2000)
           },
+          "onSelectChange": function () {
+            var item = this.getSelectedItem()
+            webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
+              item.title = d.json().title.trim()
+              item.meta = d.json().meta
+              $$("links").updateItem(item.id, item)
+            })
+          }
         }
       }
 
       app = webix.ui({
         rows: [grid]
       });
-
-      // setInterval(function () {
-      //   var items = $$("links").find({})
-      //   items.forEach(function (item) {
-      //     webix.ajax().get("/user", function (t, d, x) {
-      //       user = d.json()
-      //       webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
-      //         item.title = d.json().title.trim()
-      //         item.meta = d.json().meta
-      //         $$("links").updateItem(item.id, item)
-      //       })
-      //     })
-      //   })
-      // }, 10 * 1000)
-
     });
 
 
