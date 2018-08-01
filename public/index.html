@@ -48,23 +48,31 @@
     }
 
     function add_row() {
-      var id = $$("links").add({
-        "class": $$("links").getHeaderContent("classHead").getValue(),
-        "category": $$("links").getHeaderContent("categoryHead").getValue(),
-        "url": $$("links").getHeaderContent("urlHead").getValue(),
-        "period": $$("links").getHeaderContent("periodHead").getValue(),
-        "lastvisit": date_string(),
-      });
-      $$("links").filter()
-      setTimeout(function () {
-        $$("links").getHeaderContent("classHead").setValue(""),
-          $$("links").getHeaderContent("categoryHead").setValue(""),
-          $$("links").getHeaderContent("urlHead").setValue(""),
-          $$("links").getHeaderContent("periodHead").setValue(""),
-          $$("links").sort(pastvisSort, "asc")
-        $$("links").showItem(id);
-        $$("links").select(id)
-      }, 1000)
+      webix.ajax().get("/user", function (t, d, x) {
+        user = d.json()
+        webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + $$("links").getHeaderContent("urlHead").getValue(), function (t, d, x) {
+          var id = $$("links").add({
+            "class": $$("links").getHeaderContent("classHead").getValue(),
+            "category": $$("links").getHeaderContent("categoryHead").getValue(),
+            title: d.json().title.trim(),
+            meta: d.json().meta,
+            "url": $$("links").getHeaderContent("urlHead").getValue(),
+            "period": $$("links").getHeaderContent("periodHead").getValue(),
+            "lastvisit": date_string(),
+          });
+          $$("links").filter()
+          setTimeout(function () {
+            $$("links").getHeaderContent("classHead").setValue("")
+            $$("links").getHeaderContent("categoryHead").setValue("")
+            $$("links").getHeaderContent("urlHead").setValue("")
+            $$("links").getHeaderContent("periodHead").setValue("")
+            $$("links").sort(pastvisSort, "asc")
+            $$("links").showItem(id);
+            $$("links").select(id)
+          }, 1000)
+        })
+      })
+
     }
     function delete_row() {
       $$("links").remove($$("links").getSelectedId(true));
