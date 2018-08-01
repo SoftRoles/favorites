@@ -42,8 +42,15 @@
     function linkClick() {
       var id = $$("links").getSelectedId()
       $$("links").getItem(id)["lastvisit"] = date_string()
-      $$("links").updateItem(id, $$("links").getItem(id))
-      open($$("links").getItem(id)["url"])
+      webix.ajax().get("/user", function (t, d, x) {
+        user = d.json()
+        webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + $$("links").getHeaderContent("urlHead").getValue(), function (t, d, x) {
+          $$("links").getItem(id)["title"] = d.json().title.trim()
+          $$("links").getItem(id)["meta"] = d.json().meta
+          $$("links").updateItem(id, $$("links").getItem(id))
+          open($$("links").getItem(id)["url"])
+        })
+      })
       return true
     }
 
@@ -127,19 +134,19 @@
         rows: [grid]
       });
 
-      setInterval(function () {
-        var items = $$("links").find({})
-        items.forEach(function (item) {
-          webix.ajax().get("/user", function (t, d, x) {
-            user = d.json()
-            webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
-              item.title = d.json().title.trim()
-              item.meta = d.json().meta
-              $$("links").updateItem(item.id, item)
-            })
-          })
-        })
-      }, 10 * 1000)
+      // setInterval(function () {
+      //   var items = $$("links").find({})
+      //   items.forEach(function (item) {
+      //     webix.ajax().get("/user", function (t, d, x) {
+      //       user = d.json()
+      //       webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
+      //         item.title = d.json().title.trim()
+      //         item.meta = d.json().meta
+      //         $$("links").updateItem(item.id, item)
+      //       })
+      //     })
+      //   })
+      // }, 10 * 1000)
 
     });
 
