@@ -94,7 +94,8 @@ app.get('/favorites', require('connect-ensure-login').ensureLoggedIn({ redirectT
 app.get('/favorites/api', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
   request({
     url: "http://127.0.0.1:3000/mongodb/api/favorites/links",
-    headers: { "Authorization": "Bearer " + req.user.token }
+    headers: { "Authorization": "Bearer " + req.user.token },
+    qs: req.query,
   }, function (err, ress, body) {
     res.send(JSON.parse(body))
   })
