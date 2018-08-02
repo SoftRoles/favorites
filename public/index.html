@@ -64,14 +64,13 @@
       //   console.log(d.json())
       // })
       $$("links").filter()
+      $$("links").moveTop(id);
+      $$("links").select(id)
       setTimeout(function () {
         $$("links").getHeaderContent("classHead").setValue("")
         $$("links").getHeaderContent("categoryHead").setValue("")
         $$("links").getHeaderContent("urlHead").setValue("")
         $$("links").getHeaderContent("periodHead").setValue("")
-        // $$("links").sort(pastvisSort, "asc")
-        $$("links").showItem(id);
-        $$("links").select(id)
       }, 1000)
       // webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + $$("links").getHeaderContent("urlHead").getValue(), function (t, d, x) {
       // })
