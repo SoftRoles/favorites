@@ -106,8 +106,8 @@
 
       var grid = {
         id: "links",
-        url: "/favorites/api",
-        save: "rest->/favorites/api",
+        url: "/mongodb/api/favorites/links",
+        save: "rest->/mongodb/api/favorites/links",
         view: "datatable", select: "row",
         columns: [
           { id: "favicon", header: "", width: 50, template: iconTemplate },
@@ -123,17 +123,17 @@
         editable: true, editaction: "dblclick",
         on: {
           "onAfterLoad": function () {
-            setTimeout(function () { $$("links").sort(pastvisSort, "asc") }, 00)
+            $$("links").sort(pastvisSort, "asc")
           },
           "onSelectChange": function () {
-            var item = this.getSelectedItem()
-            if (item) {
-              webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
-                item.title = d.json().title.trim()
-                item.meta = d.json().meta
-                if (item) $$("links").updateItem(item.id, item)
-              })
-            }
+            // var item = this.getSelectedItem()
+            // if (item) {
+            //   webix.ajax().headers({ "Authorization": "Bearer " + user.token }).get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
+            //     item.title = d.json().title.trim()
+            //     item.meta = d.json().meta
+            //     if (item) $$("links").updateItem(item.id, item)
+            //   })
+            // }
           }
         }
       }
