@@ -45,11 +45,17 @@
     }
 
     function linkClick() {
-      var id = $$("links").getSelectedId()
-      $$("links").getItem(id)["lastvisit"] = date_string()
-      $$("links").updateItem(id, $$("links").getItem(id))
-      open($$("links").getItem(id)["url"])
-      return true
+      var item = $$("links").getSelectedItem()
+      webix.ajax().get("/mongodb/api/favorites/links?url=" + item.url, function (t, d, x) {
+        var item = d.json()[0]
+        item["lastvisit"] = date_string()
+        webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, item, function (t, d, x) {
+          $$("links").updateItem(item.id, item)
+          open(item.url)
+          return true
+          // webix.message("Item updated.")
+        })
+      })
     }
 
     function add_row() {
