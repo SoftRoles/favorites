@@ -5,8 +5,6 @@
   <title>Bağlantılar</title>
   <link rel="stylesheet" href="bower_components/webix/codebase/skins/compact.css" type="text/css" charset="utf-8">
   <script src="bower_components/webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
-
-
 </head>
 
 <body>
@@ -46,62 +44,60 @@
 
     function linkClick() {
       var item = $$("links").getSelectedItem()
-      webix.ajax().get("/mongodb/api/favorites/links?url=" + item.url, function (t, d, x) {
-        var item = d.json()[0]
-        item["lastvisit"] = date_string()
-        webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, item, function (t, d, x) {
-          $$("links").updateItem(item.id, item)
+      var update = { lastvisit: date_string() }
+      webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, update, function (t, d, x) {
+        console.log(d.json())
+        if (d.json().nModified) {
+          $$("links").updateItem(item.id, Object.assign(item, update));
           open(item.url)
           return true
-          // webix.message("Item updated.")
-        })
+        }
       })
     }
 
     function add_row() {
       var item = {
         id: Date.now(),
-        "class": $$("links").getHeaderContent("classHead").getValue(),
-        "category": $$("links").getHeaderContent("categoryHead").getValue(),
-        "url": $$("links").getHeaderContent("urlHead").getValue(),
-        "period": $$("links").getHeaderContent("periodHead").getValue(),
-        "lastvisit": date_string(),
+        class: $$("links").getHeaderContent("classHead").getValue(),
+        category: $$("links").getHeaderContent("categoryHead").getValue(),
+        url: $$("links").getHeaderContent("urlHead").getValue(),
+        period: $$("links").getHeaderContent("periodHead").getValue(),
+        lastvisit: date_string()
       }
-      var id = $$("links").add(item);
-      $$("links").filter()
-      setTimeout(function () {
-        $$("links").getHeaderContent("classHead").setValue("")
-        $$("links").getHeaderContent("categoryHead").setValue("")
-        $$("links").getHeaderContent("urlHead").setValue("")
-        $$("links").getHeaderContent("periodHead").setValue("")
-        $$("links").showItem(id);
-        $$("links").select(id)
-        webix.ajax().header({ "Content-type": "application/json" }).post("/mongodb/api/favorites/links", item, function (t, d, x) {
-          webix.ajax().get("/mongodb/api/favorites/links?url=" + item.url, function (t, d, x) {
-            if (d.json().length > 1) webix.message("Duplicate item")
-            var item = d.json()[0]
-            webix.ajax().get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
-              item.title = d.json().title.trim()
-              item.meta = d.json().meta
-              webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, item, function (t, d, x) {
-                $$("links").updateItem(item.id, item);
-                webix.message("Item updated.")
-              })
+
+      webix.ajax().header({ "Content-type": "application/json" }).post("/mongodb/api/favorites/links", item, function (t, d, x) {
+        if (d.json().n) {
+          item._id = d.json().insertedId
+          var id = $$("links").add(item);
+          $$("links").filter()
+          $$("links").getHeaderContent("classHead").setValue("")
+          $$("links").getHeaderContent("categoryHead").setValue("")
+          $$("links").getHeaderContent("urlHead").setValue("")
+          $$("links").getHeaderContent("periodHead").setValue("")
+          $$("links").showItem(id);
+          $$("links").select(id)
+          console.log(d.json())
+          webix.ajax().get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
+            var update = { title: d.json().title.trim(), meta: d.json().meta }
+            webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, update, function (t, d, x) {
+              console.log(d.json())
+              if (d.json().nModified) {
+                $$("links").updateItem(item.id, Object.assign(item, update));
+              }
             })
           })
-        })
-      }, 000)
-
+        }
+      })
     }
+
     function delete_row() {
       setTimeout(function () {
         var item = $$("links").getSelectedItem()
-        $$("links").remove(item.id);
-        webix.ajax().get("/mongodb/api/favorites/links?url=" + item.url, function (t, d, x) {
-          var item = d.json()[0]
-          webix.ajax().del("/mongodb/api/favorites/links/" + item._id, function (t, d, x) {
-            webix.message("Item deleted.")
-          })
+        webix.ajax().del("/mongodb/api/favorites/links/" + item._id, function (t, d, x) {
+          console.log(d.json())
+          if (d.json().n) {
+            $$("links").remove(item.id);
+          }
         })
       }, 1000)
     }
@@ -149,12 +145,15 @@
           },
           "onAfterEditStop": function (state, editor) {
             var item = this.getSelectedItem()
-            webix.ajax().get("/mongodb/api/favorites/links?url=" + item.url, function (t, d, x) {
-              var item = d.json()[0]
-              item[editor.column] = state.value
-              webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, item, function (t, d, x) {
-                webix.message("Item updated.")
-              })
+            var update = { [editor.column]: [state.value] }
+            webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, update, function (t, d, x) {
+              console.log(d.json())
+              if (d.json().nModified) {
+                $$("links").updateItem(item.id, Object.assign(item, update));
+              }
+              else{
+                $$("links").updateItem(item.id, Object.assign(item, {}));
+              }
             })
           },
         }
