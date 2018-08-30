@@ -145,7 +145,7 @@
           },
           "onAfterEditStop": function (state, editor) {
             var item = this.getSelectedItem()
-            var update = { [editor.column]: [state.value] }
+            var update = { [editor.column]: state.value }
             webix.ajax().header({ "Content-type": "application/json" }).put("/mongodb/api/favorites/links/" + item._id, update, function (t, d, x) {
               console.log(d.json())
               if (d.json().nModified) {
