@@ -47,7 +47,7 @@
     function linkClick() {
       var item = $$("links").getSelectedItem()
       var update = { lastvisit: date_string() }
-      webix.ajax().header({ "Content-type": "application/json" }).put("/database/api/v1/favorites/links/" + item._id, update, function (t, d, x) {
+      webix.ajax().headers({ "Content-type": "application/json" }).put("/database/api/v1/favorites/links/" + item._id, update, function (t, d, x) {
         console.log(d.json())
         if (d.json().nModified) {
           $$("links").updateItem(item.id, Object.assign(item, update));
@@ -67,7 +67,7 @@
         lastvisit: date_string()
       }
 
-      webix.ajax().header({ "Content-type": "application/json" }).post("/database/api/v1/favorites/links", item, function (t, d, x) {
+      webix.ajax().headers({ "Content-type": "application/json" }).post("/database/api/v1/favorites/links", item, function (t, d, x) {
         if (d.json().n) {
           item._id = d.json().insertedId
           var id = $$("links").add(item);
@@ -81,7 +81,7 @@
           console.log(d.json())
           webix.ajax().get("/webscrap/api/title?url=" + item.url, function (t, d, x) {
             var update = { title: d.json().title.trim(), meta: d.json().meta }
-            webix.ajax().header({ "Content-type": "application/json" }).put("/database/api/v1/favorites/links/" + item._id, update, function (t, d, x) {
+            webix.ajax().headers({ "Content-type": "application/json" }).put("/database/api/v1/favorites/links/" + item._id, update, function (t, d, x) {
               console.log(d.json())
               if (d.json().nModified) {
                 $$("links").updateItem(item.id, Object.assign(item, update));
@@ -148,7 +148,7 @@
           "onAfterEditStop": function (state, editor) {
             var item = this.getSelectedItem()
             var update = { [editor.column]: state.value }
-            webix.ajax().header({ "Content-type": "application/json" }).put("/database/api/v1/favorites/links/" + item._id, update, function (t, d, x) {
+            webix.ajax().headers({ "Content-type": "application/json" }).put("/database/api/v1/favorites/links/" + item._id, update, function (t, d, x) {
               console.log(d.json())
               if (d.json().nModified) {
                 $$("links").updateItem(item.id, Object.assign(item, update));
